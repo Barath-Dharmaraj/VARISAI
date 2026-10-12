@@ -12,8 +12,9 @@ export const OtpPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    email,
-    userName,
+    citizenUser,
+    email: storeEmail,
+    userName: storeName,
     demoOtp,
     setDemoOtp,
     setOtpVerified,
@@ -26,6 +27,9 @@ export const OtpPage: React.FC = () => {
     setCitizenUser,
     setSelectedPriority
   } = useAppStore();
+
+  const email = storeEmail || citizenUser?.email || '';
+  const userName = storeName || citizenUser?.name || '';
 
   const [digits, setDigits] = useState<string[]>(['', '', '', '']);
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -42,10 +46,30 @@ export const OtpPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (!email) {
+    if (!email && !citizenUser) {
       navigate('/login');
+      return;
     }
-  }, [email, navigate]);
+
+    if (!demoOtp && email) {
+      const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
+      const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
+      axios.post(`${apiBase}/api/auth/send-otp`, {
+        email,
+        name: userName,
+        userType: 'CITIZEN'
+      }).then((res) => {
+        if (res.data.success) {
+          setDemoOtp(res.data.otp);
+          setEmailDelivered(Boolean(res.data.emailDelivered));
+          setIsRealInbox(Boolean(res.data.isRealInbox));
+          setPreviewUrl(res.data.previewUrl || null);
+        }
+      }).catch((err) => {
+        console.warn("Auto-send OTP notice:", err);
+      });
+    }
+  }, [email, citizenUser, demoOtp, navigate, userName, setDemoOtp, setEmailDelivered, setIsRealInbox, setPreviewUrl]);
 
   useEffect(() => {
     if (timerSeconds <= 0) return;
@@ -88,7 +112,9 @@ export const OtpPage: React.FC = () => {
     setErrorMsg('');
 
     try {
-      const response = await axios.post('/api/auth/send-otp', {
+      const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
+      const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
+      const response = await axios.post(`${apiBase}/api/auth/send-otp`, {
         email,
         name: userName,
         userType: 'CITIZEN'
@@ -121,7 +147,9 @@ export const OtpPage: React.FC = () => {
     setErrorMsg('');
 
     try {
-      const response = await axios.post('/api/auth/verify-otp', {
+      const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
+      const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
+      const response = await axios.post(`${apiBase}/api/auth/verify-otp`, {
         email,
         otp: enteredCode,
         name: userName
@@ -135,8 +163,7 @@ export const OtpPage: React.FC = () => {
             setSelectedPriority(response.data.user.priorityCategory);
           }
         }
-        const destination = (location.state as any)?.from || '/language';
-        navigate(destination);
+        navigate('/offices');
       } else {
         setErrorMsg(response.data.error || 'Verification failed');
       }
@@ -151,7 +178,7 @@ export const OtpPage: React.FC = () => {
   const fullCodeEntered = digits.every((d) => d.length === 1);
 
   return (
-    <Layout stepNumber={4} totalSteps={10} showBack backPath="/login">
+    <Layout stepNumber={2} totalSteps={10} showBack backPath="/language">
       <VoiceAssistantBar screenTextToRead={screenSpeech} onVoiceCommand={handleVoiceCommand} />
 
       <div style={{ marginBottom: '28px' }}>

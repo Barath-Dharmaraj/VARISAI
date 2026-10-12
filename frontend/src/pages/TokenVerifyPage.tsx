@@ -23,14 +23,17 @@ export const TokenVerifyPage: React.FC = () => {
 
     const fetchTokenDetails = async () => {
       try {
-        const response = await axios.get(`/api/bookings/${bookingRef}`);
-        if (response.data.success) {
+        const cleanRef = decodeURIComponent(bookingRef).trim();
+        const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
+        const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
+        const response = await axios.get(`${apiBase}/api/bookings/${cleanRef}`);
+        if (response.data.success && response.data.booking) {
           setBooking(response.data.booking);
         } else {
           setErrorMsg('Token not found in official registry.');
         }
       } catch (err: any) {
-        console.error(err);
+        console.error('Token verification error:', err);
         setErrorMsg('Invalid or unverified token reference.');
       } finally {
         setIsLoading(false);

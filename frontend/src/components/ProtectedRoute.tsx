@@ -7,17 +7,34 @@ interface ProtectedRouteProps {
 }
 
 /**
- * Guards Citizen-facing routes.
- * If user is not authenticated and OTP-verified in the active session,
- * redirects them directly to the Login Page /login.
+ * Guards routes that require citizen password login, but NOT yet OTP verification
+ * (such as Language selection and the OTP verification page itself).
+ */
+export const CitizenAuthOnlyRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { citizenUser } = useAppStore();
+  const location = useLocation();
+
+  if (!citizenUser) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  return children;
+};
+
+/**
+ * Guards full citizen queue booking routes (Offices, Services, Priority, Token).
+ * Requires BOTH password authentication AND 4-digit email OTP verification.
  */
 export const CitizenProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { citizenUser, isOtpVerified } = useAppStore();
   const location = useLocation();
 
-  if (!citizenUser || !isOtpVerified) {
-    // Preserve the intended target URL for post-login redirect
+  if (!citizenUser) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  if (!isOtpVerified) {
+    return <Navigate to="/otp" state={{ from: location.pathname }} replace />;
   }
 
   return children;

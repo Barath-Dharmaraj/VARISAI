@@ -66,6 +66,9 @@ export const LoginPage: React.FC = () => {
   const {
     citizenUser,
     setCitizenUser,
+    setEmail,
+    setUserName,
+    setOtpVerified,
     logoutCitizen,
     staffUser,
     setStaffUser,
@@ -197,6 +200,10 @@ export const LoginPage: React.FC = () => {
 
       if (response.data.success && response.data.user) {
         setCitizenUser(response.data.user);
+        setEmail(response.data.user.email);
+        setUserName(response.data.user.name);
+        setOtpVerified(false);
+        sessionStorage.removeItem('varisai_citizen_verified');
         if (response.data.user.priorityCategory) {
           setSelectedPriority(response.data.user.priorityCategory);
         }
@@ -251,8 +258,12 @@ export const LoginPage: React.FC = () => {
 
       if (response.data.success && response.data.user) {
         setCitizenUser(response.data.user);
+        setEmail(response.data.user.email);
+        setUserName(response.data.user.name);
+        setOtpVerified(false);
+        sessionStorage.removeItem('varisai_citizen_verified');
         setSelectedPriority(regPriority);
-        setSuccessMsg('Account created and credentials registered in database! Starting session...');
+        setSuccessMsg('Account created and credentials registered in database! Welcome to VARISAI!');
         const targetUrl = (location.state as any)?.from || '/language';
         setTimeout(() => {
           navigate(targetUrl);

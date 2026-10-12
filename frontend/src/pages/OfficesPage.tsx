@@ -80,7 +80,7 @@ export const OfficesPage: React.FC = () => {
   };
 
   return (
-    <Layout stepNumber={2} totalSteps={10} showBack backPath="/language">
+    <Layout stepNumber={3} totalSteps={10} showBack backPath="/otp">
       <VoiceAssistantBar screenTextToRead={screenSpeech} onVoiceCommand={handleVoiceCommand} />
 
       <div style={{ marginBottom: '28px' }}>

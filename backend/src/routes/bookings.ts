@@ -201,8 +201,13 @@ bookingsRouter.get("/:bookingRef", async (req: Request, res: Response) => {
   try {
     const { bookingRef } = req.params;
 
-    const booking = await prisma.booking.findUnique({
-      where: { bookingRef },
+    const booking = await prisma.booking.findFirst({
+      where: {
+        OR: [
+          { bookingRef },
+          { id: bookingRef }
+        ]
+      },
       include: {
         office: true,
         service: true

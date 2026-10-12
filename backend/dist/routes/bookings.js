@@ -181,8 +181,13 @@ exports.bookingsRouter.post("/", async (req, res) => {
 exports.bookingsRouter.get("/:bookingRef", async (req, res) => {
     try {
         const { bookingRef } = req.params;
-        const booking = await db_1.prisma.booking.findUnique({
-            where: { bookingRef },
+        const booking = await db_1.prisma.booking.findFirst({
+            where: {
+                OR: [
+                    { bookingRef },
+                    { id: bookingRef }
+                ]
+            },
             include: {
                 office: true,
                 service: true

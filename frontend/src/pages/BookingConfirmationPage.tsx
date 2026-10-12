@@ -54,7 +54,9 @@ export const BookingConfirmationPage: React.FC = () => {
     }
   };
 
-  const qrVerifyUrl = `${networkBaseUrl || window.location.origin}/token-verify?ref=${confirmedBooking.bookingRef}`;
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const qrBase = isLocal ? (networkBaseUrl || 'https://varisai-web.onrender.com') : window.location.origin;
+  const qrVerifyUrl = `${qrBase}/token-verify?ref=${encodeURIComponent(confirmedBooking.bookingRef)}`;
 
   return (
     <Layout stepNumber={9} totalSteps={10} showBack backPath="/token">
@@ -166,23 +168,24 @@ export const BookingConfirmationPage: React.FC = () => {
               <Smartphone size={14} />
               <span>Scan with mobile camera</span>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate(`/token-verify?ref=${confirmedBooking.bookingRef}`)}
-              style={{
-                marginTop: '4px',
-                border: 'none',
-                background: 'transparent',
-                color: 'var(--color-text-muted)',
-                fontSize: '0.78rem',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                display: 'block',
-                margin: '4px auto 0'
-              }}
-            >
-              Desktop preview →
-            </button>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px' }}>
+              <button
+                type="button"
+                onClick={() => navigate(`/token-verify?ref=${encodeURIComponent(confirmedBooking.bookingRef)}`)}
+                className="btn-secondary"
+                style={{
+                  fontSize: '0.82rem',
+                  padding: '6px 14px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <ShieldCheck size={14} color="var(--color-gold)" />
+                <span>Open Digital Pass</span>
+              </button>
+            </div>
           </div>
         </div>
 

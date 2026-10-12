@@ -12,7 +12,7 @@ import { LiveQueuePage } from './pages/LiveQueuePage';
 import { PrintPage } from './pages/PrintPage';
 import { AdminPage } from './pages/AdminPage';
 import { TokenVerifyPage } from './pages/TokenVerifyPage';
-import { CitizenProtectedRoute, StaffProtectedRoute } from './components/ProtectedRoute';
+import { CitizenAuthOnlyRoute, CitizenProtectedRoute, StaffProtectedRoute } from './components/ProtectedRoute';
 
 export function App() {
   return (
@@ -23,18 +23,27 @@ export function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/staff-login" element={<Navigate to="/login?type=staff" replace />} />
         <Route path="/login-type" element={<Navigate to="/login" replace />} />
-        <Route path="/otp" element={<OtpPage />} />
 
         {/* Public Mobile QR Verification Slip (Scanned by smartphone cameras) */}
         <Route path="/token-verify" element={<TokenVerifyPage />} />
 
-        {/* Protected Citizen Website Routes - Locked until Citizen Login & Verification */}
+        {/* Citizen Language Selection - Requires Citizen Account Login */}
         <Route
           path="/language"
           element={
-            <CitizenProtectedRoute>
+            <CitizenAuthOnlyRoute>
               <LanguagePage />
-            </CitizenProtectedRoute>
+            </CitizenAuthOnlyRoute>
+          }
+        />
+
+        {/* Citizen Email OTP Verification - Required before Office & Token Selection */}
+        <Route
+          path="/otp"
+          element={
+            <CitizenAuthOnlyRoute>
+              <OtpPage />
+            </CitizenAuthOnlyRoute>
           }
         />
         <Route
