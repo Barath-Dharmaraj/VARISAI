@@ -122,6 +122,16 @@ class ScheduleResponse(BaseModel):
     reordered_queue: List[ScheduledItem]
     total_in_queue: int
 
+@app.get("/")
+def root():
+    return {
+        "service": "VARISAI Machine Learning & Adaptive Queue Microservice",
+        "status": "online",
+        "docs": "/docs",
+        "health": "/health",
+        "model": meta.get("best_model", "GradientBoostingRegressor")
+    }
+
 @app.get("/health")
 def health_check():
     return {

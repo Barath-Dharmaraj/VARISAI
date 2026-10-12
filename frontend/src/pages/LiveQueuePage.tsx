@@ -56,7 +56,8 @@ export const LiveQueuePage: React.FC = () => {
     fetchInitial();
 
     // Establish WebSocket Connection
-    const socket: Socket = io('/', {
+    const socketUrl = import.meta.env.VITE_API_URL || '/';
+    const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling']
     });
 
