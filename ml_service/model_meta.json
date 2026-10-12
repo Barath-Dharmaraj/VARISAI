@@ -1,0 +1,27 @@
+{
+  "dataset_name": "CDC NHAMCS Emergency Department Wait Time Dataset (2017)",
+  "source": "U.S. CDC National Ambulatory Medical Care Survey / Kaggle dlon450 benchmark",
+  "sample_size": 14294,
+  "features": [
+    "queue_depth",
+    "arrival_hour",
+    "day_of_week",
+    "priority_category",
+    "avg_service_duration",
+    "active_counters"
+  ],
+  "best_model": "GradientBoostingRegressor",
+  "metrics": {
+    "mae_minutes": 14.4,
+    "rmse_minutes": 21.91,
+    "r2_score": 0.466
+  },
+  "feature_importances": {
+    "queue_depth": 0.3324,
+    "arrival_hour": 0.08,
+    "day_of_week": 0.011,
+    "priority_category": 0.2463,
+    "avg_service_duration": 0.2867,
+    "active_counters": 0.0437
+  }
+}

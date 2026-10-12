@@ -1,0 +1,367 @@
+:root {
+  /* AgentFlow Obsidian & Champagne Gold SaaS Tokens */
+  --bg-deep: #07090E;
+  --bg-surface: #0C0F19;
+  --bg-card: rgba(16, 21, 36, 0.82);
+  --bg-card-hover: rgba(22, 29, 49, 0.9);
+  --bg-input: rgba(11, 15, 26, 0.95);
+  
+  --color-gold: #D4AF37;
+  --color-gold-glow: #F59E0B;
+  --color-gold-deep: #B8923F;
+  --color-gold-dim: #8C6D2E;
+  --color-gold-hairline: rgba(212, 175, 55, 0.22);
+  --color-gold-glow-border: rgba(212, 175, 55, 0.45);
+  
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #94A3B8;
+  --color-text-dim: #64748B;
+  
+  --color-success: #10B981;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-error: #EF4444;
+  --color-error-bg: rgba(239, 68, 68, 0.12);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(212, 175, 55, 0.35);
+
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-card-hover: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.18);
+  --shadow-gold-glow: 0 0 24px rgba(212, 175, 55, 0.25);
+
+  /* High-Contrast Dark-Luxe Fallbacks for Legacy Components */
+  --color-paper: var(--bg-surface);
+  --color-paper-dim: rgba(22, 29, 49, 0.85);
+  --color-paper-deep: var(--bg-card);
+  --color-ink: #FFFFFF;
+  --color-ink-soft: #94A3B8;
+  --color-ink-faint: #64748B;
+}
+
+/* Reset and base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-deep);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 50%, rgba(245, 158, 11, 0.03) 0%, transparent 40%),
+    linear-gradient(to bottom, #07090E, #0A0D15);
+  background-attachment: fixed;
+}
+
+/* Forbidden default focus rings - gold glow outline */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-gold) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4) !important;
+}
+
+/* Typography elements */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  color: var(--color-text-main);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+p, span, label, input, select, button {
+  font-family: var(--font-sans);
+}
+
+.numeral, .token-num, .time-display {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ======================================================== */
+/* AgentFlow Interactive Glassmorphism Cards & Containers  */
+/* ======================================================== */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--color-gold-hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+  pointer-events: none;
+}
+
+.card-interactive {
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  min-height: 72px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-interactive:hover {
+  border-color: var(--color-gold);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.card-interactive.selected {
+  border-color: var(--color-gold);
+  background: rgba(22, 29, 49, 0.95);
+  box-shadow: 0 0 0 1px var(--color-gold), 0 8px 32px rgba(212, 175, 55, 0.15);
+}
+
+/* ======================================================== */
+/* AgentFlow Button Styles & Interactive Micro-Animations   */
+/* ======================================================== */
+.btn-primary {
+  min-height: 52px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #D4AF37 0%, #B8923F 100%);
+  color: #07090E;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transition: 0.5s;
+}
+
+.btn-primary:hover:not(:disabled)::after {
+  left: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 26px rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, #E5C158 0%, #D4AF37 100%);
+  color: #07090E;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  min-height: 52px;
+  padding: 0 24px;
+  background: rgba(16, 21, 36, 0.85);
+  backdrop-filter: blur(12px);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  background: var(--bg-card-hover);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-gold {
+  min-height: 52px;
+  padding: 0 24px;
+  background: #D4AF37;
+  color: #07090E;
+  border: 1px solid #D4AF37;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.3);
+}
+
+.btn-gold:hover:not(:disabled) {
+  background: #E5C158;
+  border-color: #E5C158;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.45);
+}
+
+/* ======================================================== */
+/* AgentFlow Live Radar Dots, Shimmer & Glowing Keyframes  */
+/* ======================================================== */
+@keyframes radarPing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5)); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes shimmerGlow {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes curtainReveal {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+}
+
+.animate-float {
+  animation: floatSlow 4.5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.badge-live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-gold);
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+}
+
+.badge-live-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-gold);
+  animation: radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Ambient cyber grid overlay */
+.bg-cyber-grid {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+/* Print styles for /print screen */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    background-image: none !important;
+  }
+  .card {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "varisai-workspace",
+  "version": "1.0.0",
+  "description": "VARISAI — Smart Queue Management System for Elderly and Persons with Disabilities",
+  "scripts": {
+    "start:ml": "uvicorn app:app --app-dir ml_service --port 8040",
+    "start:backend": "npm --prefix backend run dev",
+    "start:frontend": "npm --prefix frontend run dev",
+    "seed": "npm --prefix backend run prisma:seed",
+    "train:ml": "python ml_service/train_model.py",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}
