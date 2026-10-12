@@ -5,7 +5,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Starting VARISAI Database Seed with Email Authentication & Staff Authorization...");
 
-  // Clean existing tables
+  const existingCount = await prisma.office.count();
+  if (existingCount > 0) {
+    console.log("Database already contains initialized offices and counters. Skipping re-seed.");
+    return;
+  }
+
+  // Clean existing tables if empty
   await prisma.booking.deleteMany();
   await prisma.counter.deleteMany();
   await prisma.service.deleteMany();
