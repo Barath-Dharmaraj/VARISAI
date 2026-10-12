@@ -56,7 +56,8 @@ export const LiveQueuePage: React.FC = () => {
     fetchInitial();
 
     // Establish WebSocket Connection
-    const socketUrl = import.meta.env.VITE_API_URL || '/';
+    const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
+    const socketUrl = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '/');
     const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling']
     });

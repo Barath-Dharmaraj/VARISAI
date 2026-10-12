@@ -14,6 +14,7 @@ const offices_1 = require("./routes/offices");
 const services_1 = require("./routes/services");
 const bookings_1 = require("./routes/bookings");
 const admin_1 = require("./routes/admin");
+const db_1 = require("./db");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
@@ -59,6 +60,31 @@ app.get("/api/system/network-info", (_req, res) => {
         frontendPort,
         mobileBaseUrl: `http://${localIp}:${frontendPort}`
     });
+});
+app.get("/api/system/users", async (_req, res) => {
+    try {
+        const users = await db_1.prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                district: true,
+                priorityCategory: true,
+                role: true,
+                createdAt: true
+            },
+            orderBy: { createdAt: "desc" }
+        });
+        res.status(200).json({
+            success: true,
+            totalUsers: users.length,
+            users
+        });
+    }
+    catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 app.get("/health", (_req, res) => {
     res.status(200).json({

@@ -8,6 +8,7 @@ import { officesRouter } from "./routes/offices";
 import { servicesRouter } from "./routes/services";
 import { bookingsRouter } from "./routes/bookings";
 import { adminRouter } from "./routes/admin";
+import { prisma } from "./db";
 
 dotenv.config();
 
@@ -61,6 +62,31 @@ app.get("/api/system/network-info", (_req, res) => {
     frontendPort,
     mobileBaseUrl: `http://${localIp}:${frontendPort}`
   });
+});
+
+app.get("/api/system/users", async (_req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        district: true,
+        priorityCategory: true,
+        role: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    res.status(200).json({
+      success: true,
+      totalUsers: users.length,
+      users
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.get("/health", (_req, res) => {
