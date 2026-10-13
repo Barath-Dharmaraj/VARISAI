@@ -45,13 +45,14 @@ export const StaffLoginPage: React.FC = () => {
   // OTP step
   const [activeVerifyEmail, setActiveVerifyEmail] = useState<string>('');
   const [otpCode, setOtpCode] = useState<string>('');
+  const [staffOtp, setStaffOtp] = useState<string>('5678');
   const [demoCodeNotice, setDemoCodeNotice] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // Fetch available offices for registration dropdown
-    axios.get('/api/offices')
+    axios.get('/api/offices', { timeout: 6000 })
       .then((res) => {
         if (res.data.success && res.data.offices.length > 0) {
           setOffices(res.data.offices);
@@ -81,11 +82,13 @@ export const StaffLoginPage: React.FC = () => {
       const response = await axios.post('/api/auth/staff-login', {
         email: emailInput.trim().toLowerCase(),
         staffId: staffIdInput.trim()
-      });
+      }, { timeout: 5000 });
 
       if (response.data.success) {
         setActiveVerifyEmail(emailInput.trim().toLowerCase());
-        setDemoCodeNotice(response.data.demoMessage || `Official verification code: ${response.data.otp}`);
+        const code = response.data.otp || '5678';
+        setStaffOtp(code);
+        setDemoCodeNotice(response.data.demoMessage || `Official verification code: ${code}`);
         setStep('otp');
       } else {
         setErrorMsg(response.data.error || 'Staff authorization failed.');
@@ -117,11 +120,13 @@ export const StaffLoginPage: React.FC = () => {
         staffId: regStaffId.trim(),
         department: regDept.trim(),
         officeId: regOfficeId
-      });
+      }, { timeout: 5000 });
 
       if (response.data.success) {
         setActiveVerifyEmail(regEmail.trim().toLowerCase());
-        setDemoCodeNotice(response.data.demoMessage || `Staff verification code: ${response.data.otp}`);
+        const code = response.data.otp || '5678';
+        setStaffOtp(code);
+        setDemoCodeNotice(response.data.demoMessage || `Staff verification code: ${code}`);
         setStep('otp');
       } else {
         setErrorMsg(response.data.error || 'Staff registration failed.');
@@ -147,7 +152,7 @@ export const StaffLoginPage: React.FC = () => {
       const response = await axios.post('/api/auth/staff-verify', {
         email: activeVerifyEmail,
         otp: otpCode.trim()
-      });
+      }, { timeout: 5000 });
 
       if (response.data.success) {
         setStaffUser(response.data.staff);
@@ -156,7 +161,7 @@ export const StaffLoginPage: React.FC = () => {
         setErrorMsg(response.data.error || 'Verification code failed.');
       }
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.error || 'Incorrect authorization code. Please retry.');
+      setErrorMsg(err.response?.data?.error || 'Incorrect authorization code. Please retry or click Auto-fill.');
     } finally {
       setIsLoading(false);
     }
@@ -524,6 +529,28 @@ export const StaffLoginPage: React.FC = () => {
                     display: 'block'
                   }}
                 />
+
+                <div style={{ marginTop: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOtpCode(staffOtp || '5678')}
+                    style={{
+                      background: 'rgba(184, 146, 63, 0.12)',
+                      border: '1px solid var(--color-gold-deep)',
+                      borderRadius: 'var(--radius-pill)',
+                      color: 'var(--color-gold-deep)',
+                      padding: '5px 16px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>⚡ Auto-fill Code: <strong>{staffOtp || '5678'}</strong></span>
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>

@@ -649,7 +649,10 @@ authRouter.post("/staff-register", async (req: Request, res: Response) => {
         officeName: staff.office?.name || office.name
       },
       emailDelivered: emailResult.delivered,
-      demoMessage: `Official staff authorization code has been dispatched to ${staff.email}. Check your inbox and enter the 4-digit code.`
+      otp: otpResult.otp,
+      demoMessage: emailResult.isRealInbox
+        ? `Official staff authorization code has been dispatched to ${staff.email}. Check your inbox and enter the 4-digit code.`
+        : `Official verification code: ${otpResult.otp}`
     });
   } catch (error: any) {
     console.error("Error registering staff:", error);
@@ -705,13 +708,16 @@ authRouter.post("/staff-login", async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       email: staffUser.email,
+      otp: otpResult.otp,
       name: staffUser.name,
       role: staffUser.role,
       staffId: staffUser.staffId,
       department: staffUser.department,
       office: staffUser.office,
       emailDelivered: emailResult.delivered,
-      demoMessage: `Official staff authorization code dispatched directly to ${staffUser.email}. Please inspect your inbox and enter the 4-digit code.`,
+      demoMessage: emailResult.isRealInbox
+        ? `Official staff authorization code dispatched directly to ${staffUser.email}. Please inspect your inbox and enter the 4-digit code.`
+        : `Official verification code: ${otpResult.otp}`,
       expiresAt: otpResult.expiresAt
     });
   } catch (error: any) {

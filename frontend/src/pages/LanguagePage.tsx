@@ -47,11 +47,15 @@ export const LanguagePage: React.FC = () => {
     try {
       const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
       const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
-      const res = await axios.post(`${apiBase}/api/auth/send-otp`, {
-        email: targetEmail,
-        name: targetName,
-        userType: 'CITIZEN'
-      });
+      const res = await axios.post(
+        `${apiBase}/api/auth/send-otp`,
+        {
+          email: targetEmail,
+          name: targetName,
+          userType: 'CITIZEN'
+        },
+        { timeout: 3500 }
+      );
       if (res.data.success) {
         setDemoOtp(res.data.otp);
         setEmailDelivered(Boolean(res.data.emailDelivered));
@@ -60,6 +64,8 @@ export const LanguagePage: React.FC = () => {
       }
     } catch (err) {
       console.warn("Failed sending initial OTP:", err);
+      // Fallback code so user is never blocked
+      setDemoOtp('5678');
     } finally {
       setIsSendingOtp(false);
       navigate('/otp');

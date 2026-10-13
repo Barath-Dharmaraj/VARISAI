@@ -54,11 +54,15 @@ export const OtpPage: React.FC = () => {
     if (!demoOtp && email) {
       const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
       const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
-      axios.post(`${apiBase}/api/auth/send-otp`, {
-        email,
-        name: userName,
-        userType: 'CITIZEN'
-      }).then((res) => {
+      axios.post(
+        `${apiBase}/api/auth/send-otp`,
+        {
+          email,
+          name: userName,
+          userType: 'CITIZEN'
+        },
+        { timeout: 4000 }
+      ).then((res) => {
         if (res.data.success) {
           setDemoOtp(res.data.otp);
           setEmailDelivered(Boolean(res.data.emailDelivered));
@@ -67,6 +71,8 @@ export const OtpPage: React.FC = () => {
         }
       }).catch((err) => {
         console.warn("Auto-send OTP notice:", err);
+        // Ensure demoOtp is available as backup
+        if (!demoOtp) setDemoOtp('5678');
       });
     }
   }, [email, citizenUser, demoOtp, navigate, userName, setDemoOtp, setEmailDelivered, setIsRealInbox, setPreviewUrl]);
@@ -79,7 +85,15 @@ export const OtpPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [timerSeconds]);
 
-  const screenSpeech = `${t('otp.title')}. ${t('otp.sentTo', { email })}. ${t('otp.demoNotice', { code: demoOtp })}`;
+  const activeCode = demoOtp || '5678';
+  const screenSpeech = `${t('otp.title')}. ${t('otp.sentTo', { email })}. ${t('otp.demoNotice', { code: activeCode })}`;
+
+  const handleAutoFill = () => {
+    const code = (demoOtp || '5678').slice(0, 4);
+    setDigits(code.split(''));
+    setErrorMsg('');
+    inputRefs[3].current?.focus();
+  };
 
   const handleDigitChange = (index: number, value: string) => {
     const char = value.replace(/\D/g, '').slice(-1);
@@ -114,11 +128,15 @@ export const OtpPage: React.FC = () => {
     try {
       const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
       const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
-      const response = await axios.post(`${apiBase}/api/auth/send-otp`, {
-        email,
-        name: userName,
-        userType: 'CITIZEN'
-      });
+      const response = await axios.post(
+        `${apiBase}/api/auth/send-otp`,
+        {
+          email,
+          name: userName,
+          userType: 'CITIZEN'
+        },
+        { timeout: 4000 }
+      );
       if (response.data.success) {
         setDemoOtp(response.data.otp);
         setEmailDelivered(Boolean(response.data.emailDelivered));
@@ -129,7 +147,8 @@ export const OtpPage: React.FC = () => {
         inputRefs[0].current?.focus();
       }
     } catch (err: any) {
-      setErrorMsg('Failed to resend code to email. Please retry.');
+      setErrorMsg('Failed to resend code to email. Using session fallback code.');
+      if (!demoOtp) setDemoOtp('5678');
     } finally {
       setIsResending(false);
     }
@@ -149,14 +168,19 @@ export const OtpPage: React.FC = () => {
     try {
       const isRender = typeof window !== 'undefined' && window.location.hostname.includes('onrender.com');
       const apiBase = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-backend.onrender.com' : '');
-      const response = await axios.post(`${apiBase}/api/auth/verify-otp`, {
-        email,
-        otp: enteredCode,
-        name: userName
-      });
+      const response = await axios.post(
+        `${apiBase}/api/auth/verify-otp`,
+        {
+          email,
+          otp: enteredCode,
+          name: userName
+        },
+        { timeout: 5000 }
+      );
 
       if (response.data.success) {
         setOtpVerified(true);
+        sessionStorage.setItem('varisai_citizen_verified', 'true');
         if (response.data.user) {
           setCitizenUser(response.data.user);
           if (response.data.user.priorityCategory) {
@@ -169,7 +193,7 @@ export const OtpPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.response?.data?.error || 'Incorrect OTP code. Please enter the code sent to your email.');
+      setErrorMsg(err.response?.data?.error || 'Incorrect OTP code. Please enter the code sent to your email or click Auto-fill.');
     } finally {
       setIsVerifying(false);
     }
@@ -250,40 +274,41 @@ export const OtpPage: React.FC = () => {
             </div>
           )}
 
-          {/* Session code reveal toggle */}
-          <div style={{ marginTop: '12px' }}>
-            {showBackupCode ? (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--color-gold-hairline)', borderRadius: 'var(--radius-sm)' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Session Code:</span>
-                <span className="numeral" style={{ letterSpacing: '0.12em', color: 'var(--color-gold)', fontWeight: 700, fontSize: '1.15rem' }}>
-                  {demoOtp || '5678'}
-                </span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowBackupCode(true)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--color-gold)',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  padding: 0
-                }}
-              >
-                Reveal session code on screen
-              </button>
-            )}
+          {/* Active Session Verification Code Badge with Instant Auto-fill */}
+          <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', backgroundColor: 'rgba(255, 255, 255, 0.06)', border: '1.5px solid var(--color-gold-hairline)', borderRadius: 'var(--radius-sm)' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Official Code:</span>
+              <span className="numeral" style={{ letterSpacing: '0.15em', color: 'var(--color-gold)', fontWeight: 700, fontSize: '1.25rem' }}>
+                {activeCode}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAutoFill}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 16px',
+                backgroundColor: 'var(--color-gold)',
+                color: '#07090E',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <span>⚡ Auto-fill Code</span>
+            </button>
           </div>
         </div>
       </div>
 
       <div className="card" style={{ padding: '36px 32px', marginBottom: '28px' }}>
         <form onSubmit={handleVerify}>
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <label
               style={{
                 display: 'block',
@@ -336,6 +361,28 @@ export const OtpPage: React.FC = () => {
                   }}
                 />
               ))}
+            </div>
+
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={handleAutoFill}
+                style={{
+                  background: 'rgba(212, 175, 55, 0.1)',
+                  border: '1px solid var(--color-gold-hairline)',
+                  borderRadius: 'var(--radius-pill)',
+                  color: 'var(--color-gold)',
+                  padding: '6px 18px',
+                  fontSize: '0.86rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>⚡ Auto-fill Code: <strong style={{ letterSpacing: '0.08em' }}>{activeCode}</strong></span>
+              </button>
             </div>
           </div>
 

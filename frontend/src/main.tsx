@@ -10,6 +10,7 @@ const backendUrl = import.meta.env.VITE_API_URL || (isRender ? 'https://varisai-
 if (backendUrl) {
   axios.defaults.baseURL = backendUrl;
 }
+axios.defaults.timeout = 8000;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

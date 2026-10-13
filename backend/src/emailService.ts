@@ -19,7 +19,8 @@ export async function sendOtpEmail(
   const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
   const smtpPort = Number(process.env.SMTP_PORT) || 465;
   const smtpSecure = process.env.SMTP_SECURE === "false" ? false : true;
-  const smtpFrom = process.env.SMTP_FROM || `"VARISAI Queue Portal" <${smtpUser || "noreply@varisai.gov.in"}>`;
+
+  console.log(`[VARISAI OTP DISPATCH] Session code for ${normalizedEmail}: ${otpCode}`);
 
   const greeting = recipientName ? `Dear ${recipientName},` : "Dear Citizen,";
 
@@ -76,7 +77,7 @@ export async function sendOtpEmail(
 </html>
 `;
 
-  // Case 1: Real Server SMTP Configured (Delivers directly to user's real email)
+  // Case 1: Real SMTP Configured (Send to real inbox with strict 3.5s timeout)
   if (smtpUser && smtpPass) {
     try {
       const cleanPass = smtpPass.replace(/\s+/g, "");
@@ -86,6 +87,9 @@ export async function sendOtpEmail(
         host: smtpHost,
         port: smtpPort,
         secure: smtpSecure,
+        connectionTimeout: 3000,
+        greetingTimeout: 3000,
+        socketTimeout: 3000,
         auth: {
           user: smtpUser,
           pass: cleanPass
@@ -95,66 +99,39 @@ export async function sendOtpEmail(
         }
       });
 
-      const info = await transporter.sendMail({
+      const sendPromise = transporter.sendMail({
         from: cleanFrom,
         to: normalizedEmail,
         subject: `[VARISAI] ${otpCode} is your Queue Portal Verification Code`,
-        text: `${greeting}\n\nYour VARISAI verification code is: ${otpCode}\n\nThis code is valid for 5 minutes. Do not share this code with anyone.\n\n— Government of Tamil Nadu Public Service Portal`,
+        text: `${greeting}\n\nYour VARISAI verification code is: ${otpCode}\n\nThis code is valid for 5 minutes.\n\n— Government of Tamil Nadu`,
         html: htmlContent
       });
 
-      console.log(`[EMAIL DELIVERED TO REAL INBOX] Sent to ${normalizedEmail} (Message ID: ${info.messageId})`);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("SMTP delivery timed out after 3.5s")), 3500)
+      );
+
+      const info = await Promise.race([sendPromise, timeoutPromise]);
+      console.log(`[REAL EMAIL DELIVERED] Successfully sent to ${normalizedEmail}`);
       return {
         delivered: true,
         isRealInbox: true,
         messageId: info.messageId
       };
     } catch (err: any) {
-      console.error(`[REAL SMTP ERROR] Failed to send email to ${normalizedEmail}:`, err.message);
-      // Fall through to Ethereal fallback
+      console.warn(`[SMTP NOTICE] Real SMTP send failed or timed out (${err.message}). Code active in session.`);
+      return {
+        delivered: false,
+        isRealInbox: false,
+        error: err.message
+      };
     }
   }
 
-  // Case 2: Zero-config Test Account (Generates instant live web inbox preview)
-  try {
-    console.log(`[EMAIL DISPATCH] Generating test delivery for ${normalizedEmail}...`);
-    const testAccount = await nodemailer.createTestAccount();
-    const testTransporter = nodemailer.createTransport({
-      host: testAccount.smtp.host,
-      port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-
-    const info = await testTransporter.sendMail({
-      from: `"VARISAI Queue Portal" <noreply@varisai.gov.in>`,
-      to: normalizedEmail,
-      subject: `[VARISAI] ${otpCode} is your Queue Portal Verification Code`,
-      text: `${greeting}\n\nYour VARISAI verification code is: ${otpCode}\n\nThis code is valid for 5 minutes.\n\n— Government of Tamil Nadu`,
-      html: htmlContent
-    });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    console.log(`[EMAIL PREVIEW INBOX READY] To: ${normalizedEmail} | Preview: ${previewUrl}`);
-
-    return {
-      delivered: true,
-      isRealInbox: false,
-      previewUrl: previewUrl || false,
-      messageId: info.messageId
-    };
-  } catch (fallbackErr: any) {
-    console.warn(`[EMAIL NOTICE] Code generated for ${normalizedEmail}: ${otpCode}`);
-    return {
-      delivered: false,
-      isRealInbox: false,
-      error: fallbackErr.message
-    };
-  }
+  // Case 2: Instant Sandbox / Cloud Fallback (Returns immediately in < 2ms - NEVER hangs!)
+  return {
+    delivered: false,
+    isRealInbox: false,
+    messageId: undefined
+  };
 }
